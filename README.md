@@ -44,12 +44,12 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-TODO
-This is a quick and dirty script to convert and patch *.qfx files to CSV files. It will:
-* process all *.qfx files in the ~/Downloads folder
-* patch the Payee and Category fields based upon a mappings file
-* add new transactions to the database file
-* skip duplicate transactions based up the existing transactions in the database
+This is a quick and dirty set of scripts to manage a csv file of bank/credit card transaction.
+* import all *.qfx files in the ~/Downloads folder
+   * patch the Payee and Category fields based upon a mappings file
+   * skip duplicate transactions based up the existing transactions in the database
+* audit the database for similarly named Payees, Payees with multiple categories, unmapped transactions, ...
+* report the balance for each account and the monthly balance for the checking account
 
 Notes:
 * All folder locations and filenames can be easily adjusted at the top of the index.js file.
