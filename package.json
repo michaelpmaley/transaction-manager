@@ -1,0 +1,22 @@
+{
+  "name": "transaction-management",
+  "version": "1.0.0",
+  "description": "Transaction management - import, audit, report",
+  "main": "index.js",
+  "scripts": {
+    "audit": "node audit.js",
+    "backfill": "node backfill.js",
+    "import": "node import.js",
+    "report": "node report.js"
+  },
+  "keywords": [],
+  "author": "Michael P Maley",
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "csvjson": "^5.1.0",
+    "dayjs": "^1.11.6",
+    "ofx-js": "^0.1.1",
+    "string-similarity": "^4.0.4"
+  }
+}
