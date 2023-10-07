@@ -36,7 +36,7 @@ const computeInstitution = ((org) => {
 });
 
 const computeDefaultCategory = ((type) => {
-   return type === 'CREDIT' ? 'Income' : 'Misc Expense';
+   return type === 'CREDIT' ? 'UNKNOWN' : 'UNKNOWN';
 });
 
 const computeMemo = ((accountType, payee, memo) => {
@@ -108,7 +108,7 @@ const computeMemo = ((accountType, payee, memo) => {
                transaction.category = mappings[mappingKey].category;
             }
          });
-         if (transaction.category === 'Misc Expense') {
+         if (transaction.category === 'UNKNOWN') {
             transaction.payee = transaction.payee.toUpperCase();
          }
 

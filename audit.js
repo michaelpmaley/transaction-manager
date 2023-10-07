@@ -9,7 +9,7 @@ dayjs.extend(utc);
 import stringSimilarity from 'string-similarity';
 
 const DATABASEFILE = path.join(os.homedir(), 'Documents', 'Financial', 'transactions.csv');
-const CATEGORYLIST = ["Activities & Entertainment","Auto & Transport","Balance","Bills & Utilities","Business Services","Fees & Charges","Food & Dining","Gifts & Donations","Healthcare","Home","Income","Misc Expense","Personal Care","Shopping","Taxes","Transfer","Travel"];
+const CATEGORYLIST = ["Activities & Entertainment","Auto & Transport","Balance","Bills & Utilities","Business Services","Fees & Charges","Food & Dining","Gifts & Donations","Healthcare","Home","Income","Misc Expense","Personal Care","Shopping","Taxes","Transfer","Travel", "UNKNOWN"];
 
 (async () => {
 
@@ -45,7 +45,7 @@ const CATEGORYLIST = ["Activities & Entertainment","Auto & Transport","Balance",
 
    console.log(`TRANSACTIONS ========================================`);
    database.forEach(transaction => {
-      if (transaction.category === 'Misc Expense' && transaction.payee !== 'ATM WITHDRAWAL') {
+      if (transaction.category === 'UNKNOWN') {
          console.log(`UNMAPPED: ${transaction.date}, ${transaction.payee}, ${transaction.amount}, ${transaction.notes}`);
       }
       let p = transaction.amount.split('.');
