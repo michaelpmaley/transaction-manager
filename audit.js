@@ -33,6 +33,7 @@ const CATEGORYLIST = ["Activities & Entertainment","Auto & Transport","Balance",
          console.log(`MULTIPLE: ${payee}: ${payeeCategories}`);
       }
    });
+   console.log(`\n`);
    payees.forEach(payee => {
       var matches = stringSimilarity.findBestMatch(payee, payees);
       matches.ratings.forEach(match => {

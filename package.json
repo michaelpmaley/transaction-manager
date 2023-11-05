@@ -17,6 +17,7 @@
     "csvjson": "^5.1.0",
     "dayjs": "^1.11.6",
     "ofx-js": "^0.1.1",
-    "string-similarity": "^4.0.4"
+    "string-similarity": "^4.0.4",
+    "text-graph.js": "^1.1.2"
   }
 }
