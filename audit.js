@@ -50,7 +50,7 @@ const CATEGORYLIST = ["Activities & Entertainment","Auto & Transport","Balance",
          console.log(`UNMAPPED: ${transaction.date}, ${transaction.payee}, ${transaction.amount}, ${transaction.notes}`);
       }
       let p = transaction.amount.split('.');
-      if (p[1].length != 2) {
+      if (p[1] == null || p[1].length != 2) {
          console.log(`ODD: ${JSON.stringify(transaction)}`);
       }
    });
