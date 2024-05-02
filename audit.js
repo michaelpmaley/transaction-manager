@@ -5,11 +5,10 @@ import path from 'path';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc.js';
 dayjs.extend(utc);
-//const stringSimilarity = require("string-similarity");
 import stringSimilarity from 'string-similarity';
 
 const DATABASEFILE = path.join(os.homedir(), 'Documents', 'Financial', 'transactions.csv');
-const CATEGORYLIST = ["Activities & Entertainment","Auto & Transport","Balance","Bills & Utilities","Business Services","Fees & Charges","Food & Dining","Gifts & Donations","Healthcare","Home","Income","Misc Expense","Personal Care","Shopping","Taxes","Transfer","Travel", "UNKNOWN"];
+const CATEGORYLIST = ["Activities & Entertainment","Auto & Transport","Balance","Bills & Utilities","Business Services","Fees & Charges","Food & Dining","Charitable Donations","Healthcare: Medical & Dental","Healthcare: Premiums","Healthcare: Prescriptions","Home","Income","Misc Expense","Personal Care","Shopping","Taxes: Federal","Taxes: Local","Taxes: State","Transfer","Travel", "UNKNOWN"];
 
 (async () => {
 
@@ -18,7 +17,6 @@ const CATEGORYLIST = ["Activities & Entertainment","Auto & Transport","Balance",
    console.log(`CATEGORIES ========================================`);
    const categories = [...new Set(database.map(i => i.category).sort())];
    categories.forEach(category => {
-      // console.log(category);
       if (CATEGORYLIST.indexOf(category) === -1) {
          console.log(`INCORRECT: ${category}`);
       }
@@ -34,20 +32,21 @@ const CATEGORYLIST = ["Activities & Entertainment","Auto & Transport","Balance",
       }
    });
    console.log(`\n`);
-   payees.forEach(payee => {
-      var matches = stringSimilarity.findBestMatch(payee, payees);
+   for (var i = 0; i < payees.length-1; i++) {
+      let payee = payees[i];
+      var matches = stringSimilarity.findBestMatch(payee, payees.slice(i+1));
       matches.ratings.forEach(match => {
-         if (match.rating > .7 && match.rating != 1 && match.target.indexOf('airport') == -1) {
+         if (match.rating > .73 && match.rating != 1 && match.target.indexOf('airport') == -1 && match.target.indexOf('↺') == -1) {
             console.log(`SIMILIAR: ${payee} ~= ${match.target}`);
          }
       });
-   });
+   }
    console.log(`\n\n`);
 
    console.log(`TRANSACTIONS ========================================`);
    database.forEach(transaction => {
       if (transaction.category === 'UNKNOWN') {
-         console.log(`UNMAPPED: ${transaction.date}, ${transaction.payee}, ${transaction.amount}, ${transaction.notes}`);
+         console.log(`UNMAPPED: ${transaction.date}, ${transaction.payee}, ${transaction.amount}, ${transaction.memo}`);
       }
       let p = transaction.amount.split('.');
       if (p[1] == null || p[1].length != 2) {

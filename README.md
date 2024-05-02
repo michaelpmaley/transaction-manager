@@ -44,7 +44,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-This is a quick and dirty set of scripts to manage a csv file of bank/credit card transaction.
+This is a quick and dirty set of scripts to manage a csv file of bank/credit card transactions.
 * import all *.qfx files in the ~/Downloads folder
    * patch the Payee and Category fields based upon a mappings file
    * skip duplicate transactions based up the existing transactions in the database
@@ -52,7 +52,7 @@ This is a quick and dirty set of scripts to manage a csv file of bank/credit car
 * report the balance for each account and the monthly balance for the checking account
 
 Notes:
-* All folder locations and filenames can be easily adjusted at the top of the index.js file.
+* All folder locations and filenames can be easily adjusted at the top of each .js file.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -64,28 +64,28 @@ Notes:
 ### Prerequisites
 
 1. Create a transaction mapping file, `~/Documents/Financial/transaction-mappings.json`.
-It is a basic json dictionary, for example:
+It is a basic json array, for example:
 ```json
-{
-   "AA WINDOW & GUTTER": {"payee": "AA Window & Gutter", "category": "Home"},
-   "ADTSECURITY": {"payee": "ADT Security ↺", "category": "Bills & Utilities"},
-   "ALASKA AIRLINES": {"payee": "Alaska Airlines", "category": "Travel"},
-}
+[
+   {"ofxPattern": "AA WINDOW & GUTTER", "newPayee": "AA Window & Gutter", "newCategory": "Home"},
+   {"ofxPattern": "ADTSECURITY", "newPayee": "ADT Security ↺", "newCategory": "Bills & Utilities"},
+   {"ofxPattern": "ALASKA AIRLINES", "newPayee": "Alaska Airlines", "newCategory": "Travel"},
+]
 ```
 where the key is a regular expression that will match on payee or memo/note fields.
 
 2. Create the initial database file, `~/Documents/Financial/transactions.csv`.
 ```
-date,payee,category,amount,notes,checknum,institution,type,id
+date,payee,category,amount,memo,checknum,type,accountId,id,originalPayee,originalMemo
 ```
 
 It will become a history of all processed transactions. For example:
 ```
-date,payee,category,amount,notes,checknum,institution,type,id
-2020-06-16,OUDE KERK AMSTERDAM AMSTERDAM,Misc Expense,-21.38,OUDE KERK AMSTERDAM AMSTERDAM 12/15 Euro       24.00 X 1.07000,,BOA,DEBIT,202210000
-2020-05-10,AplPay HUGENDUBEL MUMUENCHEN DE,Misc Expense,-11.22,BOOK STORE AplPay HUGENDUBEL MUENCHEN / MARIENPLATZ MUENCHEN DE,,BOA,DEBIT,202048943
-2020-05-04,Amazon,Shopping,-3.19,55555-BC9RQXWEFGP DIGITAL PRIME VIDEO *I60589RS3 888-222-3333 TX,,AMEX,DEBIT,190003580174349989
-2020-04-21,Starbucks,Food & Dining,-25.00,33333-99VlpqMavbq 8007137942 STARBUCKS 800-777-2222 TX,,AMEX,DEBIT,190229472900044339
+date,payee,category,amount,memo,checknum,type,accountId,id,originalPayee,originalMemo
+2020-06-16,OUDE KERK AMSTERDAM AMSTERDAM,Misc Expense,-21.38,OUDE KERK AMSTERDAM AMSTERDAM 12/15 Euro       24.00 X 1.07000,,DEBIT,8888,202210000,,
+2020-05-10,AplPay HUGENDUBEL MUMUENCHEN DE,Misc Expense,-11.22,BOOK STORE AplPay HUGENDUBEL MUENCHEN / MARIENPLATZ MUENCHEN DE,,DEBIT,8888,202048943,,
+2020-05-04,Amazon,Shopping,-3.19,55555-BC9RQXWEFGP DIGITAL PRIME VIDEO *I60589RS3 888-222-3333 TX,,DEBIT,9999,190003580174349989,,
+2020-04-21,Starbucks,Food & Dining,-25.00,33333-99VlpqMavbq 8007137942 STARBUCKS 800-777-2222 TX,,DEBIT,9999,190229472900044339,,
 ```
 
 
