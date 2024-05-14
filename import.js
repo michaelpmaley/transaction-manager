@@ -10,8 +10,8 @@ dayjs.extend(utc);
 const DOWNLOADSFOLDER = path.join(os.homedir(), 'Downloads');
 const MAPPINGSFILE = path.join(os.homedir(), 'Documents', 'Financial', 'transaction-mappings.json');
 const DATABASEFILE = path.join(os.homedir(), 'Documents', 'Financial', 'transactions.csv');
-const DATABASEBAKFOLDER = path.join(os.homedir(), 'Temp');
-const DATABASEBAKFILE = path.join(DATABASEBAKFOLDER, `transactions-${Date.now().toString()}.csv`);
+const DATABASEBAKFOLDER = path.join(os.homedir(), 'Documents', 'Backups', 'transaction-manager');
+const DATABASEBAKFILE = path.join(DATABASEBAKFOLDER, `transactions-backup-${Date.now().toString()}.csv`);
 const HEADERS = 'date,payee,category,amount,memo,checknum,type,accountId,id,originalPayee,originalMemo';
 
 const ACCOUNTTYPE = {
@@ -51,6 +51,10 @@ const computeMemo = ((accountType, payee, memo) => {
    var skippedCount = 0;
    var importedCount = 0;
 
+   // backup database
+   fs.copyFileSync(DATABASEFILE, DATABASEBAKFILE);
+
+   // process qfx files
    for (const file of fs.readdirSync(DOWNLOADSFOLDER)) {
       if (!file.toLowerCase().endsWith('.qfx')) {
          console.log(`SKIPPING: ${file}`);
@@ -112,7 +116,6 @@ const computeMemo = ((accountType, payee, memo) => {
    }
 
    // update database
-   fs.copyFileSync(DATABASEFILE, DATABASEBAKFILE);
    database.sort((a,b) => b.date.localeCompare(a.date) || b.id - a.id);
    const databaseData = HEADERS + csvjson.toCSV(database, {delimiter: ',', headers: 'none'}) + '\n';
    fs.writeFileSync(DATABASEFILE, databaseData);
