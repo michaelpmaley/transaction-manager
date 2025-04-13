@@ -46,10 +46,11 @@
 
 This is a quick and dirty set of scripts to manage a csv file of bank/credit card transactions.
 * import all *.qfx files in the ~/Downloads folder
-   * patch the Payee and Category fields based upon a mappings file
+   * patch the Payee and CategoryName fields based upon a mappings file
    * skip duplicate transactions based up the existing transactions in the database
-* audit the database for similarly named Payees, Payees with multiple categories, unmapped transactions, ...
 * report the balance for each account and the monthly balance for the checking account
+* audit the database for similarly named Payees, Payees with multiple categories, unmapped transactions, ...
+
 
 Notes:
 * All folder locations and filenames can be easily adjusted at the top of each .js file.
@@ -67,21 +68,21 @@ Notes:
 It is a basic json array, for example:
 ```json
 [
-   {"ofxPattern": "AA WINDOW & GUTTER", "newPayee": "AA Window & Gutter", "newCategory": "Home"},
-   {"ofxPattern": "ADTSECURITY", "newPayee": "ADT Security ↺", "newCategory": "Bills & Utilities"},
-   {"ofxPattern": "ALASKA AIRLINES", "newPayee": "Alaska Airlines", "newCategory": "Travel"},
+   {"ofxPattern": "AA WINDOW & GUTTER", "newPayee": "AA Window & Gutter", "newCategoryName": "Home"},
+   {"ofxPattern": "ADTSECURITY", "newPayee": "ADT Security ↺", "newCategoryName": "Bills & Utilities"},
+   {"ofxPattern": "ALASKA AIRLINES", "newPayee": "Alaska Airlines", "newCategoryName": "Travel"},
 ]
 ```
 where the key is a regular expression that will match on payee or memo/note fields.
 
 2. Create the initial database file, `~/Documents/Financial/transactions.csv`.
 ```
-date,payee,category,amount,memo,checknum,type,accountId,id,originalPayee,originalMemo
+date,payee,categoryName,amount,memo,checknum,type,accountId,id,originalPayee,originalMemo
 ```
 
 It will become a history of all processed transactions. For example:
 ```
-date,payee,category,amount,memo,checknum,type,accountId,id,originalPayee,originalMemo
+date,payee,categoryName,amount,memo,checknum,type,accountId,id,originalPayee,originalMemo
 2020-06-16,OUDE KERK AMSTERDAM AMSTERDAM,Misc Expense,-21.38,OUDE KERK AMSTERDAM AMSTERDAM 12/15 Euro       24.00 X 1.07000,,DEBIT,8888,202210000,,
 2020-05-10,AplPay HUGENDUBEL MUMUENCHEN DE,Misc Expense,-11.22,BOOK STORE AplPay HUGENDUBEL MUENCHEN / MARIENPLATZ MUENCHEN DE,,DEBIT,8888,202048943,,
 2020-05-04,Amazon,Shopping,-3.19,55555-BC9RQXWEFGP DIGITAL PRIME VIDEO *I60589RS3 888-222-3333 TX,,DEBIT,9999,190003580174349989,,

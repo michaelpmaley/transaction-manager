@@ -5,7 +5,6 @@ import path from 'path';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc.js';
 dayjs.extend(utc);
-//import { Plot, LabelPositionFlags, PlotAxisScale, PlotSeriesAggregationFn, PlotSeriesOverflow, Color, BackgroundColor } from 'text-graph.js';
 
 const DATABASEFILE = path.join(os.homedir(), 'Documents', 'Financial', 'transactions.csv');
 const CURRENCYFORMATTER = new Intl.NumberFormat('en-US', {style: 'currency', currency: 'USD' });
@@ -16,68 +15,26 @@ const CURRENCYFORMATTER = new Intl.NumberFormat('en-US', {style: 'currency', cur
 
    const accountIds = [...new Set(database.map(i => i.accountId).sort())];
    const accountBalances = new Map(accountIds.map(i => [i, 0]));
-   //const categories = [...new Set(database.map(i => i.category).sort())];
-   //const payees = [...new Set(database.map(i => i.payee).sort())];
-   //const netbymonth = new Map();
-   //const bankaccountbymonth = new Map();
+   const accountTransactionCounts = new Map(accountIds.map(i => [i, 0]));
 
    database.forEach(transaction => {
-      // running balance per account
       accountBalances.set(transaction.accountId, accountBalances.get(transaction.accountId) + parseFloat(transaction.amount));
-
-      // running net per month
-      //let month = transaction.date.slice(0, 7);
-      //if (!netbymonth.has(month)) {
-      //   netbymonth.set(month, parseFloat(transaction.amount));
-      //} else {
-      //   netbymonth.set(month, parseFloat(netbymonth.get(month)) + parseFloat(transaction.amount));
-      //}
-
-      //if (transaction.accountId === CHECKINGACCOUNT) {
-      //   if (!bankaccountbymonth.has(month)) {
-      //      bankaccountbymonth.set(month, parseFloat(transaction.amount));
-      //   } else {
-      //      bankaccountbymonth.set(month, parseFloat(bankaccountbymonth.get(month)) + parseFloat(transaction.amount));
-      //   }
-      //}
+      accountTransactionCounts.set(transaction.accountId, accountTransactionCounts.get(transaction.accountId) + 1);
    });
 
-   // convert the map from monthly net to monthly balance by summing from the earliest entry
-   //let bankaccountbalance = 0;
-   //for (let entry of [...bankaccountbymonth].reverse()) {
-   //   bankaccountbalance = parseFloat(entry[1]) + parseFloat(bankaccountbalance);
-   //   bankaccountbymonth.set(entry[0], bankaccountbalance);
-   //}
-
-   console.log(`${"ACCOUNTS ".padEnd(40, '=')}`);
    let totalBalance = 0;
-   accountBalances.forEach((balance, accountId) => {
-      totalBalance += balance;
+   let totalCount = 0;
+   console.log(`${"ACCOUNTS ".padEnd(40, '=')}`);
+   accountIds.forEach((accountId) => {
       let name = accountId.includes("|") ? "Amex" : "Chase";
-      console.log(`${name.padEnd(8)} ${CURRENCYFORMATTER.format(balance).padStart(13)}`);
+      let balance = accountBalances.get(accountId);
+      totalBalance += balance;
+      let count = accountTransactionCounts.get(accountId);
+      totalCount += count;
+      console.log(`${name.padEnd(8)} ${CURRENCYFORMATTER.format(balance).padStart(13)} ${count.toString().padStart(8)}`);
    });
-   console.log(`         -------------`);
-   console.log(`         ${CURRENCYFORMATTER.format(totalBalance).padStart(13)}`);
+   console.log(`         ------------- --------`);
+   console.log(`         ${CURRENCYFORMATTER.format(totalBalance).padStart(13)} ${totalCount.toString().padStart(8)}`);
    console.log(`\n\n`);
-
-   //console.log(`${"BANK ACCOUNT BALANCE BY MONTH ".padEnd(40, '=')}`);
-   //const plot = new Plot(160, 20);
-   //const id = plot.addSeries();
-   //plot.addSeriesRange(id, Array.from(bankaccountbymonth.values()).reverse());
-   //const chartData = plot.paint();
-   //console.log(chartData);
-   //console.log(`\n\n`)
-
-   //console.log(`${"BANK ACCOUNT BALANCE BY MONTH ".padEnd(40, '=')}`);
-   //bankaccountbymonth.forEach((balance, month) => {
-   //   console.log(`${month}: ${CURRENCYFORMATTER.format(balance).padStart(13)}`);
-   //});
-   //console.log(`\n\n`);
-
-   //console.log(`${"NET BY MONTH ".padEnd(40, '=')}`);
-   //netbymonth.forEach((amount, month) => {
-   //   console.log(`${month}: ${CURRENCYFORMATTER.format(amount).padStart(13)}`);
-   //});
-   //console.log(`\n\n`);
 
 })();

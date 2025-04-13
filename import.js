@@ -12,7 +12,7 @@ const MAPPINGSFILE = path.join(os.homedir(), 'Documents', 'Financial', 'transact
 const DATABASEFILE = path.join(os.homedir(), 'Documents', 'Financial', 'transactions.csv');
 const DATABASEBAKFOLDER = path.join(os.homedir(), 'Documents', 'Backups', 'transaction-manager');
 const DATABASEBAKFILE = path.join(DATABASEBAKFOLDER, `transactions-backup-${Date.now().toString()}.csv`);
-const HEADERS = 'date,payee,category,amount,memo,checknum,type,accountId,id,originalPayee,originalMemo';
+const HEADERS = 'date,payee,categoryName,amount,memo,checknum,type,accountId,id,originalPayee,originalMemo';
 
 const ACCOUNTTYPE = {
    BANK: 'Checking',
@@ -21,26 +21,36 @@ const ACCOUNTTYPE = {
 Object.freeze(ACCOUNTTYPE);
 
 const parseOfxDate = ((ofxDate) => {
-   // Chase: 20221003120000[0:GMT] will be converted correctly
-   // Amex: 20221001000000.000[-7:MST] will be converted without timezone, ie just date
+   // Chase: 20221003120000[0:GMT]      will be converted as is
+   // Amex:  20221001000000.000[-7:MST] will be converted as noon and without timezone
    const d = ofxDate.slice(0, ofxDate.indexOf('['));
-   const z = ofxDate.slice(ofxDate.indexOf('[')+1, ofxDate.indexOf(':'));
-   const date = dayjs.utc(d);//.utcOffset(parseInt(z, 10));
-   return date;
+   const z = parseInt(ofxDate.slice(ofxDate.indexOf('[')+1, ofxDate.indexOf(':')), 10);
+   let date = dayjs.utc(d);
+   //if (z != 0) { date = date.set('hour', 12) } // HACK for Amex
+   return date.format('YYYY-MM-DD') + "T12:00:00.000Z";
 });
 
-const computeMemo = ((accountType, payee, memo) => {
+const computePayee = ((ofxPayee) => {
+   var payee = ofxPayee ? ofxPayee.trim() : ' ';
+   payee = payee.replace(/,/g, '');
+   payee = payee.replace(/\t/g, '');
+
+   var newPayee = payee;
+   return newPayee.trim();
+});
+
+const computeMemo = ((accountType, payee, ofxMemo) => {
+   var memo = ofxMemo ? ofxMemo.trim() : ' ';
+   memo = memo.replace(/,/g, '');
+   memo = memo.replace(/\t/g, '');
+
+   var newMemo = memo;
    if (accountType === ACCOUNTTYPE.BANK) {
-      if (!memo) {
-         // check: payee
-         return payee;
-      } else {
-         // debit,credit: payee + memo
-         return payee + ' ' + memo;
-      }
-   } else {
-      return memo || ' ';
+      // check: payee
+      // debit,credit: payee + memo
+      newMemo = payee + ' ' + memo;
    }
+   return newMemo.trim();
 });
 
 (async () => {
@@ -51,18 +61,15 @@ const computeMemo = ((accountType, payee, memo) => {
    var skippedCount = 0;
    var importedCount = 0;
 
-   // backup database
-   fs.copyFileSync(DATABASEFILE, DATABASEBAKFILE);
-
    // process qfx files
    for (const file of fs.readdirSync(DOWNLOADSFOLDER)) {
       if (!file.toLowerCase().endsWith('.qfx')) {
-         console.log(`SKIPPING: ${file}`);
+         //console.log(`SKIPPING: ${file}`);
          continue;
       }
-      console.log(`PROCESSING: ${file}`)
 
       // read ofx file
+      console.log(`PROCESSING: ${file}`)
       const ofxFile = path.join(DOWNLOADSFOLDER, file);
       const ofxData = await parseOFX(fs.readFileSync(ofxFile).toString());
       const accountType = ofxData.OFX.BANKMSGSRSV1 ? ACCOUNTTYPE.BANK : ACCOUNTTYPE.CREDITCARD;
@@ -73,43 +80,44 @@ const computeMemo = ((accountType, payee, memo) => {
       // process transactions
       for (const ofxTransaction of ofxTransactions) {
          // NOTE: property names must match databaseColumns names
+         const newPayee = computePayee(ofxTransaction.NAME);
+         const newMemo = computeMemo(accountType, newPayee, ofxTransaction.MEMO);
          const transaction = {
-             // Chase: stays the same, ie is already noon
-             // Amex: force it to noon which aligns with website/app display and *not* -7:MST offset
-            date: parseOfxDate(ofxTransaction.DTPOSTED).format('YYYY-MM-DD') + "T12:00:00.000Z",
-            payee: ofxTransaction.NAME,
-            category: 'UNKNOWN',
+            date: parseOfxDate(ofxTransaction.DTPOSTED), //.format('YYYY-MM-DD') + "T12:00:00.000Z",
+            payee: newPayee,
+            categoryName: 'UNKNOWN',
             amount: ofxTransaction.TRNAMT,
-            memo: computeMemo(accountType, ofxTransaction.NAME, ofxTransaction.MEMO),
+            memo: newMemo,
             checknum: ofxTransaction.CHECKNUM || '',
             type: ofxTransaction.TRNTYPE,
             accountId: accountId,
             id: ofxTransaction.FITID,
             originalPayee: ofxTransaction.NAME,
-            originalMemo: ofxTransaction.MEMO
+            originalMemo: ofxTransaction.MEMO || ''
          };
 
          // if it exists, skip it
          if (databaseIds.includes(transaction.id)) {
-            console.log(`   SKIPPED: ${transaction.date}, ${transaction.payee}, ${transaction.amount}, ${transaction.id}`);
+            //console.log(`   SKIPPED: ${transaction.date}, ${transaction.payee}, ${transaction.amount}, ${transaction.id}`);
             skippedCount++;
             continue;
          }
 
-         // remap payee and category
+         // remap payee and categoryName
          mappings.find(mapping => {
             const re = new RegExp(mapping.ofxPattern);
-            if (re.test(transaction.payee) || re.test(transaction.memo)) {
+            const text = transaction.originalPayee + " " + transaction.amount
+            if (re.test(text)) {
                transaction.payee = mapping.newPayee;
-               transaction.category = mapping.newCategory;
+               transaction.categoryName = mapping.newCategoryName;
             }
          });
-         if (transaction.category === 'UNKNOWN') {
+         if (transaction.categoryName === 'UNKNOWN') {
             transaction.payee = transaction.payee.toUpperCase();
          }
 
          // save it
-         console.log(`   IMPORTED: ${transaction.date}, ${transaction.payee}, ${transaction.category}, ${transaction.amount}, ${transaction.memo}, ${transaction.checknum}, ${transaction.accountId}`);
+         console.log(`   IMPORTED: ${transaction.date}, ${transaction.payee}, ${transaction.categoryName}, ${transaction.amount}, ${transaction.memo}, ${transaction.checknum}, ${transaction.accountId}`);
          database.push(transaction);
          importedCount++;
       }
@@ -120,5 +128,8 @@ const computeMemo = ((accountType, payee, memo) => {
    const databaseData = HEADERS + csvjson.toCSV(database, {delimiter: ',', headers: 'none'}) + '\n';
    fs.writeFileSync(DATABASEFILE, databaseData);
    console.log(`\nCOMPLETED: ${importedCount} imported, ${skippedCount} skipped`);
+
+   // backup database
+   fs.copyFileSync(DATABASEFILE, DATABASEBAKFILE);
 
 })();

@@ -6,6 +6,8 @@
   "scripts": {
     "audit": "node audit.js",
     "backfill": "node backfill.js",
+    "backup": "node backup.js",
+    "compare": "node compare.js",
     "import": "node import.js",
     "report": "node report.js"
   },

@@ -8,17 +8,17 @@ dayjs.extend(utc);
 import stringSimilarity from 'string-similarity';
 
 const DATABASEFILE = path.join(os.homedir(), 'Documents', 'Financial', 'transactions.csv');
-const CATEGORYLIST = ["Activities & Entertainment","Auto & Transport","Balance","Bills & Utilities","Business Services","Fees & Charges","Food & Dining","Charitable Donations","Healthcare: Medical & Dental","Healthcare: Premiums","Healthcare: Prescriptions","Home","Income","Misc Expense","Personal Care","Shopping","Taxes: Federal","Taxes: Local","Taxes: State","Transfer","Travel", "UNKNOWN"];
+const CATEGORYNAMELIST = ["Activities & Entertainment","Auto & Transport","Balance","Bills & Utilities","Business Services","Fees & Charges","Food & Dining","Charitable Donations","Healthcare: Medical & Dental","Healthcare: Premiums","Healthcare: Prescriptions","Home","Income","Misc Expense","Personal Care","Shopping","Taxes: Federal","Taxes: Local","Taxes: State","Transfer","Travel", "UNKNOWN"];
 
 (async () => {
 
    const database = csvjson.toObject(fs.readFileSync(DATABASEFILE).toString(), {delimiter: ',', quote: '"'});
 
    console.log(`CATEGORIES ========================================`);
-   const categories = [...new Set(database.map(i => i.category).sort())];
-   categories.forEach(category => {
-      if (CATEGORYLIST.indexOf(category) === -1) {
-         console.log(`INCORRECT: ${category}`);
+   const categoryNames = [...new Set(database.map(i => i.categoryName).sort())];
+   categoryNames.forEach(categoryName => {
+      if (CATEGORYNAMELIST.indexOf(categoryName) === -1) {
+         console.log(`INCORRECT: ${categoryName}`);
       }
    });
    console.log("\n\n");
@@ -26,7 +26,7 @@ const CATEGORYLIST = ["Activities & Entertainment","Auto & Transport","Balance",
    console.log(`PAYEES ========================================`);
    const payees = [...new Set(database.map(i => i.payee).sort())];
    payees.forEach(payee => {
-      const payeeCategories = [...new Set(database.filter(i => i.payee === payee).map(i => i.category).sort())];
+      const payeeCategories = [...new Set(database.filter(i => i.payee === payee).map(i => i.categoryName).sort())];
       if (payeeCategories.length > 1) {
          console.log(`MULTIPLE: ${payee}: ${payeeCategories}`);
       }
@@ -45,7 +45,7 @@ const CATEGORYLIST = ["Activities & Entertainment","Auto & Transport","Balance",
 
    console.log(`TRANSACTIONS ========================================`);
    database.forEach(transaction => {
-      if (transaction.category === 'UNKNOWN') {
+      if (transaction.categoryName === 'UNKNOWN') {
          console.log(`UNMAPPED: ${transaction.date}, ${transaction.payee}, ${transaction.amount}, ${transaction.memo}`);
       }
       let p = transaction.amount.split('.');
